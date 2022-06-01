@@ -5,7 +5,7 @@ metadata:
   title: Domain delegation Request at Cloudbees
   description: I want a domain delegation from AWS to GCP
 spec:
-  owner: backstage/xino12
+  owner: user:guest
   type: service
 
   parameters:
