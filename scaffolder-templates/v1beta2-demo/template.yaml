@@ -1,107 +1,74 @@
-apiVersion: backstage.io/v1beta2
+apiVersion: scaffolder.backstage.io/v1beta3
 kind: Template
 metadata:
-  name: v1beta2-demo
-  title: Test Action template
-  description: scaffolder v1beta2 template demo publishing to github
+  name: domain-delegation
+  title: Domain delegation Request at Cloudbees
+  description: I want a domain delegation from AWS to GCP
 spec:
-  owner: backstage/techdocs-core
+  owner: user:guest
   type: service
 
   parameters:
     - title: Fill in some steps
       required:
-        - name
-        - owner
+        - subdomain
+        - gcp_zone
       properties:
-        name:
-          title: Name
+        subdomain:
+          title: subdomain
           type: string
-          description: Unique name of the component
+          description: subdomain
           ui:autofocus: true
           ui:options:
             rows: 5
-        owner:
-          title: Owner
+        gcp_zone:
+          title: gcp_zone
           type: string
-          description: Owner of the component
-          ui:field: OwnerPicker
+          description: gcp_zone
+          ui:autofocus: true
           ui:options:
-            allowedKinds: 
-              - Group
-        system:
-          title: System
-          type: string
-          description: System of the component
-          ui:field: EntityPicker
-          ui:options:
-            allowedKinds:
-              - System
-            defaultKind: System
-            
-    - title: Choose a location
-      required:
-        - repoUrl
-        - dryRun
-      properties:
-        repoUrl:
-          title: Repository Location
-          type: string
-          ui:field: RepoUrlPicker
-          ui:options:
-            allowedHosts:
-              - github.com
-        dryRun:
-          title: Only perform a dry run, don't publish anything
-          type: boolean
-          default: false
+            rows: 5
+        # targetPath:
+        #   title: Target Path in repo
+        #   type: string
+        #   description: Name of the directory to create in the repository
+    # - title: Choose a location
+    #   required:
+    #     - repoUrl
+    #   properties:
+    #     repoUrl:
+    #       title: Repository Location
+    #       type: string
+    #       ui:field: RepoUrlPicker
+    #       ui:options:
+    #         allowedHosts:
+    #           - github.com
 
   steps:
-    - id: fetch-base
-      name: Fetch Base
+    - id: template
+      name: Fetch Skeleton + Template
       action: fetch:template
       input:
-        url: ./template
+        url: ./skeleton
+        # for future tests.
+        # copyWithoutRender:
+        #   - .github/workflows/*
         values:
-          name: '{{ parameters.name }}'
-          owner: '{{ parameters.owner }}'         
-          system: '{{ parameters.system }}'
-          destination: '{{ parseRepoUrl parameters.repoUrl }}'
-
-    - id: fetch-docs
-      name: Fetch Docs
-      action: fetch:plain
-      input:
-        targetPath: ./community
-        url: https://github.com/backstage/community/tree/main/backstage-community-sessions
+            subdomain: '{{ parameters.subdomain }}'
+            gcp_zone: '{{ parameters.gcp_zone }}'
 
     - id: publish
-      if: '{{ not parameters.dryRun }}'
       name: Publish
-      action: publish:github
+      action: publish:github:pull-request
       input:
-        allowedHosts: ['github.com']
-        description: 'This is {{ parameters.name }}'
-        repoUrl: '{{ parameters.repoUrl }}'
-
-    - id: register
-      if: '{{ not parameters.dryRun }}'
-      name: Register
-      action: catalog:register
-      input:
-        repoContentsUrl: '{{ steps.publish.output.repoContentsUrl }}'
-        catalogInfoPath: '/catalog-info.yaml'
-
-    - name: Results
-      if: '{{ parameters.dryRun }}'
-      action: debug:log
-      input:
-        listWorkspace: true
+        repoUrl: 'github.com?owner=xino12&repo=backstage'
+        title: 'Create domain delegation: {{parameters.subdomain}}'
+        branchName: 'domain-delegation-{{parameters.subdomain}}'
+        description: |
+          # New Domain delegation: {{parameters.subdomain}}
+        targetPath: 'domain-delegations'
 
   output:
-    links:
-      - title: Repository
-        url: '{{ steps.publish.output.remoteUrl }}'
-      - title: Open in catalog
-        icon: 'catalog'
-        entityRef: '{{ steps.register.output.entityRef }}'
+    links: 
+      - url: '{{steps.publish.output.remoteUrl}}'
+        text: 'Go to PR'
