@@ -2,7 +2,7 @@ apiVersion: scaffolder.backstage.io/v1beta3
 kind: Template
 metadata:
   name: domain-delegation
-  title: Domain delegation Request at Cloudbees
+  title: CORINNE
   description: I want a domain delegation from AWS to GCP
 spec:
   owner: user:guest
